@@ -1,33 +1,59 @@
-Problem 7: Autocomplete System for Search Engine
-Scenario: Build a Google-like autocomplete that suggests queries as users type, based on 10
-million previous search queries and their popularity.
-Problem Statement: Create an autocomplete system that:
-● Stores search queries with frequency counts
-● Returns top 10 suggestions for any prefix in <50ms
-● Updates frequencies based on new searches
-● Handles typos and suggests corrections
-● Optimizes for memory (10M queries × avg 30 characters)
-Concepts Covered:
-● Hash table for query frequency storage
-● String hashing techniques
-● Performance benchmarking (prefix search)
-● Space complexity optimization
-Hints:
-// HashMap<query, frequency> for global stats
-// Trie + HashMap hybrid for prefix matching
-// Cache popular prefix results
-// Use min-heap for top K results
-```
+import java.util.*;
 
-**Use Cases:**
-- Google search autocomplete
-- Amazon product search suggestions
-- IDE code completion
-**Sample Input/Output:**
-```
-search("jav") →
-1. " tutorial" (1,234,567 searches)
-2. "script" (987,654 searches)
-3. " download" (456,789 searches)
-...
-updateFrequency(" 21 features") → Frequency: 1 → 2 → 3 (trending)
+public class Java_week1_ques7 {
+
+    private HashMap<String, Integer> queryFrequency = new HashMap<>();
+
+    public void addQuery(String query) {
+        queryFrequency.put(query, queryFrequency.getOrDefault(query, 0) + 1);
+    }
+
+    public List<String> search(String prefix) {
+
+        PriorityQueue<Map.Entry<String, Integer>> pq =
+                new PriorityQueue<>((a, b) -> b.getValue() - a.getValue());
+
+        for (Map.Entry<String, Integer> entry : queryFrequency.entrySet()) {
+            if (entry.getKey().startsWith(prefix)) {
+                pq.add(entry);
+            }
+        }
+
+        List<String> results = new ArrayList<>();
+        int count = 0;
+
+        while (!pq.isEmpty() && count < 10) {
+            Map.Entry<String, Integer> entry = pq.poll();
+            results.add(entry.getKey() + " (" + entry.getValue() + " searches)");
+            count++;
+        }
+
+        return results;
+    }
+
+    public void updateFrequency(String query) {
+        queryFrequency.put(query, queryFrequency.getOrDefault(query, 0) + 1);
+        System.out.println(query + " → Frequency: " + queryFrequency.get(query));
+    }
+
+    public static void main(String[] args) {
+
+        Java_week1_ques7 auto = new Java_week1_ques7();
+
+        auto.addQuery("java tutorial");
+        auto.addQuery("javascript");
+        auto.addQuery("java download");
+        auto.addQuery("java tutorial");
+        auto.addQuery("java 21 features");
+
+        System.out.println("Suggestions for 'jav':");
+
+        List<String> suggestions = auto.search("jav");
+        for (int i = 0; i < suggestions.size(); i++) {
+            System.out.println((i + 1) + ". " + suggestions.get(i));
+        }
+
+        auto.updateFrequency("java 21 features");
+        auto.updateFrequency("java 21 features");
+    }
+}
